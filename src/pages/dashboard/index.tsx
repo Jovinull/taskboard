@@ -6,8 +6,16 @@ import { getSession } from "next-auth/react";
 import { Textarea } from '../../components/textarea'
 import { FiShare2 } from 'react-icons/fi'
 import { FaTrash } from "react-icons/fa";
+import { db } from "@/services/firebaseConnection";
+import { addDoc, collection } from "firebase/firestore";
 
-export default function Dashboard() {
+interface HomeProps {
+    user: {
+        email: string;
+    }
+}
+
+export default function Dashboard({ user }: HomeProps) {
     const[input, setInput] = useState("")
     const[publicTask, setPublicTask] = useState(false)
 
@@ -16,13 +24,26 @@ export default function Dashboard() {
         setPublicTask(event.target.checked)
     }
 
-    function handleRegisterTask(task: FormEvent) {
+    async function handleRegisterTask(task: FormEvent) {
 
         event?.preventDefault();
 
         if(input == '') return;
 
-        alert("TESTE")
+        try {
+            await addDoc(collection(db, "tarefas"), {
+                tarefa: input,
+                created: new Date(),
+                user: user?.email,
+                public: publicTask
+            });
+
+            setInput("");
+            setPublicTask(false);
+
+        } catch(err) {
+            console.log(err)
+        }
     }
 
     return (
@@ -113,6 +134,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     }
 
     return {
-        props: {}
-    }
-}
+        props: {
+            user: {
+                email: session?.user?.email,
+            },
+        },
+    };
+};
