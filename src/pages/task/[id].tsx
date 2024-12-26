@@ -3,6 +3,7 @@ import { useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
 import styles from "./styles.module.css";
+import { FaTrash } from 'react-icons/fa'
 
 import { Textarea } from "@/components/textarea";
 
@@ -102,6 +103,14 @@ export default function Task({ item, allComments }: TaskProps) {
 
                 {comments.map((item) => (
                     <article key={item.id} className={styles.comment}>
+                        <div className={styles.headComment}>
+                            <label className={styles.commentsLabel}>{item.name}</label>
+                            {item.user === session?.user?.email && (
+                                <button className={styles.buttonTrash}>
+                                    <FaTrash size={18} color="#EA3140"></FaTrash>
+                                </button>
+                            )}
+                        </div>
                         <p>{item.comment}</p>
                     </article>
                 ))}
