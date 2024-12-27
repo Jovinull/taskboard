@@ -1,40 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# TaskBoard  
 
-## Getting Started
+TaskBoard é uma aplicação de gerenciamento de tarefas desenvolvida com **Next.js**, **Firebase** e **Next-Auth**. Projetada para oferecer uma experiência moderna e intuitiva, a plataforma permite que os usuários criem, compartilhem e interajam com tarefas de forma eficiente e segura.  
 
-First, run the development server:
+## 🚀 Funcionalidades  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Autenticação Segura:** Login via Google com integração ao Next-Auth.  
+- **Gerenciamento de Tarefas:** Criação, edição, exclusão e definição de visibilidade (pública ou privada) das tarefas.  
+- **Compartilhamento Simplificado:** Tarefas públicas podem ser compartilhadas por links únicos.  
+- **Interação com Comentários:** Usuários autenticados podem comentar em tarefas públicas, promovendo discussões e feedbacks.  
+- **Banco de Dados em Tempo Real:** Alterações são refletidas imediatamente na aplicação utilizando Firebase Firestore.  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tecnologias Utilizadas  
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+- **Next.js:** Framework para desenvolvimento de aplicações React, com suporte a renderização no servidor e geração de páginas estáticas.  
+- **Firebase Firestore:** Banco de dados NoSQL para armazenamento em tempo real.  
+- **Next-Auth:** Biblioteca de autenticação para Next.js, utilizada para login via Google.  
+- **CSS Modules:** Estilização modular para um design limpo e organizado.  
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## 📸 Capturas de Tela  
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+1. **Tela de Login**  
+   Login seguro e prático utilizando contas do Google.  
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Dashboard**  
+   Visão geral das tarefas, com opções para adicionar novas tarefas.  
 
-## Learn More
+3. **Tela de Criação de Tarefas**  
+   Registro de tarefas com configuração de visibilidade (públicas ou privadas).  
 
-To learn more about Next.js, take a look at the following resources:
+4. **Tarefas Públicas**  
+   Explore e compartilhe tarefas públicas por links únicos.  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+5. **Seção de Comentários**  
+   Interação entre usuários por meio de feedbacks e discussões em tarefas públicas.  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 💻 Como Rodar o Projeto  
 
-## Deploy on Vercel
+### Pré-requisitos  
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Node.js (versão LTS recomendada)  
+- Conta no Firebase para configurar o Firestore e autenticação  
+- Chave de API do Google para Next-Auth  
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+### Passo a Passo  
+
+1. Clone o repositório:  
+   ```bash
+   git clone https://github.com/seu-usuario/taskboard.git
+   cd taskboard
+   ```  
+
+2. Instale as dependências:  
+   ```bash
+   npm install
+   ```  
+
+3. Configure as variáveis de ambiente:  
+   Crie um arquivo `.env.local` com as seguintes variáveis:  
+   ```env
+   NEXT_PUBLIC_FIREBASE_API_KEY=YOUR_FIREBASE_API_KEY
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=YOUR_FIREBASE_AUTH_DOMAIN
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=YOUR_FIREBASE_PROJECT_ID
+   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_SECRET=YOUR_SECRET
+   GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+   GOOGLE_CLIENT_SECRET=YOUR_GOOGLE_CLIENT_SECRET
+   ```  
+
+4. Inicie o servidor de desenvolvimento:  
+   ```bash
+   npm run dev
+   ```  
+
+5. Acesse a aplicação no navegador:  
+   ```
+   http://localhost:3000
+   ```  
+
+## 🚧 Melhorias Futuras  
+
+- **Notificações em Tempo Real:** Alertar usuários sobre novos comentários em suas tarefas.  
+- **Busca Avançada:** Filtros para facilitar a localização de tarefas específicas.  
+- **Dashboard Personalizado:** Painéis personalizados com base nas preferências do usuário.  
+
+## 🤝 Contribuindo  
+
+Sinta-se à vontade para contribuir com o TaskBoard!  
+
+1. Faça um fork do projeto.  
+2. Crie uma branch para sua feature: `git checkout -b minha-feature`.  
+3. Envie suas mudanças: `git push origin minha-feature`.  
+4. Abra um Pull Request.  
+
+## 📜 Licença  
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.  
+
+## ✨ Agradecimentos  
+
+- Ao meu professor [Nome do Professor] pelo suporte e ensinamentos durante o desenvolvimento.  
+- À comunidade de desenvolvedores por recursos e inspiração.  
+
+## 📬 Contato  
+
+- **LinkedIn:** [Felipe Jovino dos Santos](https://www.linkedin.com/in/jobas/)  
+- **E-mail:** [felipejovinogamerplay@gmail.com](felipejovinogamerplay@gmail.com)  
