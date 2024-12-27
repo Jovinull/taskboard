@@ -4,5 +4,20 @@
     height: 160px;
     border-radius: 8px;
     outline: none;
-    padding: 8px;
+    padding: 12px;
+    font-size: 16px;
+    color: #333;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.textarea:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 4px rgba(74, 144, 226, 0.5);
+    background-color: #fff;
+}
+
+.textarea::placeholder {
+    color: #999;
 }
