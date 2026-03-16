@@ -2,9 +2,7 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import styles from "./styles.module.css";
-
-import { db } from "../../services/firebaseConnection";
+import { db } from "@/services/firebaseConnection";
 import {
   doc,
   collection,
@@ -15,11 +13,11 @@ import {
   getDocs,
   deleteDoc,
 } from "firebase/firestore";
-
-import { Textarea } from "../../components/textarea";
+import { Textarea } from "@/components/textarea";
 import { FaTrash } from "react-icons/fa";
+import styles from "./styles.module.css";
 
-interface TaskProps {
+interface TaskDetailProps {
   item: {
     tarefa: string;
     created: string;
@@ -27,10 +25,10 @@ interface TaskProps {
     user: string;
     taskId: string;
   };
-  allComments: CommentProps[];
+  allComments: Comment[];
 }
 
-interface CommentProps {
+interface Comment {
   id: string;
   comment: string;
   taskId: string;
@@ -38,60 +36,55 @@ interface CommentProps {
   name: string;
 }
 
-export default function Task({ item, allComments }: TaskProps) {
+export default function Task({ item, allComments }: TaskDetailProps) {
   const { data: session } = useSession();
-
   const [input, setInput] = useState("");
-  const [comments, setComments] = useState<CommentProps[]>(allComments || []);
+  const [comments, setComments] = useState<Comment[]>(allComments || []);
 
-  async function handleComment(event: FormEvent) {
-    event.preventDefault();
+  async function handleComment(e: FormEvent) {
+    e.preventDefault();
 
-    if (input === "") return;
-
+    if (!input.trim()) return;
     if (!session?.user?.email || !session?.user?.name) return;
 
     try {
       const docRef = await addDoc(collection(db, "comments"), {
-        comment: input,
+        comment: input.trim(),
         created: new Date(),
-        user: session?.user?.email,
-        name: session?.user?.name,
-        taskId: item?.taskId,
+        user: session.user.email,
+        name: session.user.name,
+        taskId: item.taskId,
       });
 
-      const data = {
-        id: docRef.id,
-        comment: input,
-        user: session?.user?.email,
-        name: session?.user?.name,
-        taskId: item?.taskId,
-      };
-
-      setComments((oldItems) => [...oldItems, data]);
+      setComments((prev) => [
+        ...prev,
+        {
+          id: docRef.id,
+          comment: input.trim(),
+          user: session.user!.email!,
+          name: session.user!.name!,
+          taskId: item.taskId,
+        },
+      ]);
       setInput("");
     } catch (err) {
-      console.log(err);
+      console.error("Erro ao adicionar comentario:", err);
     }
   }
 
   async function handleDeleteComment(id: string) {
     try {
-      const docRef = doc(db, "comments", id);
-      await deleteDoc(docRef);
-
-      const deletComment = comments.filter((item) => item.id !== id);
-
-      setComments(deletComment);
+      await deleteDoc(doc(db, "comments", id));
+      setComments((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
-      console.log(err);
+      console.error("Erro ao deletar comentario:", err);
     }
   }
 
   return (
     <div className={styles.container}>
       <Head>
-        <title>Tarefa - Detalhes da tarefa</title>
+        <title>Detalhes da tarefa | Tarefas+</title>
       </Head>
 
       <main className={styles.main}>
@@ -102,42 +95,46 @@ export default function Task({ item, allComments }: TaskProps) {
       </main>
 
       <section className={styles.commentsContainer}>
-        <h2>Deixar comentário</h2>
-
+        <h2>Deixar comentario</h2>
         <form onSubmit={handleComment}>
           <Textarea
             value={input}
-            onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-              setInput(event.target.value)
+            onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+              setInput(e.target.value)
             }
-            placeholder="Digite seu comentário..."
+            placeholder="Digite seu comentario..."
           />
-          <button disabled={!session?.user} className={styles.button}>
-            Enviar comentário
+          <button
+            disabled={!session?.user}
+            className={styles.button}
+            type="submit"
+          >
+            Enviar comentario
           </button>
         </form>
       </section>
 
       <section className={styles.commentsContainer}>
-        <h2>Todos comentários</h2>
+        <h2>Todos os comentarios</h2>
         {comments.length === 0 && (
-          <span>Nenhum comentário foi encontrado...</span>
+          <span>Nenhum comentario ainda.</span>
         )}
 
-        {comments.map((item) => (
-          <article key={item.id} className={styles.comment}>
+        {comments.map((comment) => (
+          <article key={comment.id} className={styles.comment}>
             <div className={styles.headComment}>
-              <label className={styles.commentsLabel}>{item.name}</label>
-              {item.user === session?.user?.email && (
+              <label className={styles.commentsLabel}>{comment.name}</label>
+              {comment.user === session?.user?.email && (
                 <button
                   className={styles.buttonTrash}
-                  onClick={() => handleDeleteComment(item.id)}
+                  onClick={() => handleDeleteComment(comment.id)}
+                  title="Deletar comentario"
                 >
-                  <FaTrash size={18} color="#EA3140" />
+                  <FaTrash size={16} color="#ef4444" />
                 </button>
               )}
             </div>
-            <p>{item.comment}</p>
+            <p>{comment.comment}</p>
           </article>
         ))}
       </section>
@@ -149,23 +146,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const id = params?.id as string;
   const docRef = doc(db, "tarefas", id);
 
-  const q = query(collection(db, "comments"), where("taskId", "==", id));
-  const snapshotComments = await getDocs(q);
+  const [snapshot, snapshotComments] = await Promise.all([
+    getDoc(docRef),
+    getDocs(query(collection(db, "comments"), where("taskId", "==", id))),
+  ]);
 
-  let allComments: CommentProps[] = [];
-  snapshotComments.forEach((doc) => {
-    allComments.push({
-      id: doc.id,
-      comment: doc.data().comment,
-      user: doc.data().user,
-      name: doc.data().name,
-      taskId: doc.data().taskId,
-    });
-  });
-
-  const snapshot = await getDoc(docRef);
-
-  if (snapshot.data() === undefined) {
+  if (!snapshot.exists() || !snapshot.data()?.public) {
     return {
       redirect: {
         destination: "/",
@@ -174,29 +160,27 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     };
   }
 
-  if (!snapshot.data()?.public) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
+  const data = snapshot.data();
+  const miliseconds = data?.created?.seconds * 1000;
 
-  const miliseconds = snapshot.data()?.created?.seconds * 1000;
-
-  const task = {
-    tarefa: snapshot.data()?.tarefa,
-    public: snapshot.data()?.public,
-    created: new Date(miliseconds).toLocaleDateString(),
-    user: snapshot.data()?.user,
-    taskId: id,
-  };
+  const allComments: Comment[] = snapshotComments.docs.map((doc) => ({
+    id: doc.id,
+    comment: doc.data().comment,
+    user: doc.data().user,
+    name: doc.data().name,
+    taskId: doc.data().taskId,
+  }));
 
   return {
     props: {
-      item: task,
-      allComments: allComments,
+      item: {
+        tarefa: data?.tarefa,
+        public: data?.public,
+        created: new Date(miliseconds).toLocaleDateString(),
+        user: data?.user,
+        taskId: id,
+      },
+      allComments,
     },
   };
 };
