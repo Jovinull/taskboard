@@ -1,67 +1,82 @@
 .container {
-    background-color: #0f0f0f;
-    width: 100%;
-    height: calc(100vh - 76px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+  background-color: var(--color-bg);
+  width: 100%;
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 40px 24px;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 640px;
 }
 
 .logoContent {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero {
-    max-width: 480px;
-    object-fit: contain;
-    width: auto;
-    height: auto;
+  max-width: 420px;
+  object-fit: contain;
+  width: auto;
+  height: auto;
 }
 
 .title {
-    color: #fff;
-    text-align: center;
-    margin: 28px;
-    line-height: 150%;
+  color: var(--color-text);
+  text-align: center;
+  margin: 32px 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: -0.3px;
 }
 
 .infoContent {
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .box {
-    background-color: #fafafa;
-    padding: 14px 44px;
-    border-radius: 4px;
-    transition: transform 0.4s;
+  background-color: var(--color-card-bg);
+  padding: 16px 48px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-card-text);
+  transition: transform var(--transition);
+  border: 1px solid #e5e5e5;
 }
 
 .box:hover {
-    transform: scale(1.08);
+  transform: translateY(-2px);
 }
 
 @media screen and (max-width: 580px) {
-    .hero {
-        max-width: 80%;
-    }
+  .hero {
+    max-width: 80%;
+  }
 
-    .title {
-        font-size: 24px;
-    }
+  .title {
+    font-size: 22px;
+  }
 
-    .infoContent {
-        flex-direction: column;
-    }
+  .infoContent {
+    flex-direction: column;
+    width: 100%;
+  }
 
-    .box {
-        width: 80%;
-        margin-bottom: 14px;
-        text-align: center;
-    }
+  .box {
+    width: 100%;
+    text-align: center;
+  }
 }
