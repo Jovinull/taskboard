@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "npx tsx src/lib/seed.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.1",
