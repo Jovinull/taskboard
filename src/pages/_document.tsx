@@ -5,7 +5,14 @@ export default function Document() {
     <Html lang="pt-BR">
       <Head>
         <meta charSet="utf-8" />
-        <meta name="description" content="Organize suas tarefas e estudos de forma simples e colaborativa." />
+        <meta
+          name="description"
+          content="Plataforma profissional para organizar, priorizar e acompanhar suas tarefas."
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
       </Head>
       <body>
         <Main />
