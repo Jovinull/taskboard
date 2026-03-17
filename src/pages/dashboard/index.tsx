@@ -1,21 +1,10 @@
 import { GetServerSideProps } from "next";
-import { ChangeEvent, FormEvent, useState, useEffect } from "react";
+import { ChangeEvent, FormEvent, useState, useEffect, useCallback } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { getSession } from "next-auth/react";
 import { FiShare2 } from "react-icons/fi";
 import { FaTrash } from "react-icons/fa";
-import { db } from "@/services/firebaseConnection";
-import {
-  addDoc,
-  collection,
-  query,
-  orderBy,
-  where,
-  onSnapshot,
-  doc,
-  deleteDoc,
-} from "firebase/firestore";
 import { Textarea } from "@/components/textarea";
 import styles from "./styles.module.css";
 
@@ -38,25 +27,23 @@ export default function Dashboard({ user }: DashboardProps) {
   const [publicTask, setPublicTask] = useState(false);
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  useEffect(() => {
-    const tarefasRef = collection(db, "tarefas");
-    const q = query(
-      tarefasRef,
-      orderBy("created", "desc"),
-      where("user", "==", user?.email)
+  const loadTasks = useCallback(async () => {
+    const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+    const data = await res.json();
+    setTasks(
+      data.map((t: { id: string; tarefa: string; created: string; user_email: string; public: number }) => ({
+        id: t.id,
+        tarefa: t.tarefa,
+        created: t.created,
+        user: t.user_email,
+        public: !!t.public,
+      }))
     );
+  }, [user.email]);
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const lista = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Task[];
-
-      setTasks(lista);
-    });
-
-    return () => unsubscribe();
-  }, [user?.email]);
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
 
   async function handleRegisterTask(e: FormEvent) {
     e.preventDefault();
@@ -64,14 +51,20 @@ export default function Dashboard({ user }: DashboardProps) {
     if (!input.trim()) return;
 
     try {
-      await addDoc(collection(db, "tarefas"), {
-        tarefa: input.trim(),
-        created: new Date().toISOString(),
-        user: user?.email,
-        public: publicTask,
+      const res = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tarefa: input.trim(),
+          public: publicTask,
+        }),
       });
-      setInput("");
-      setPublicTask(false);
+
+      if (res.ok) {
+        setInput("");
+        setPublicTask(false);
+        loadTasks();
+      }
     } catch (err) {
       console.error("Erro ao registrar tarefa:", err);
     }
@@ -90,7 +83,10 @@ export default function Dashboard({ user }: DashboardProps) {
 
   async function handleDeleteTask(id: string) {
     try {
-      await deleteDoc(doc(db, "tarefas", id));
+      const res = await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setTasks((prev) => prev.filter((t) => t.id !== id));
+      }
     } catch (err) {
       console.error("Erro ao deletar tarefa:", err);
     }

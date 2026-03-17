@@ -3,8 +3,7 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import heroImg from "../../public/assets/hero.png";
-import { db } from "../services/firebaseConnection";
-import { collection, getDocs } from "firebase/firestore";
+import getDb from "../lib/db";
 
 interface HomeProps {
   posts: number;
@@ -47,18 +46,19 @@ export default function Home({ posts, comments }: HomeProps) {
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const commentRef = collection(db, "comments");
-  const postRef = collection(db, "tarefas");
+  const db = getDb();
 
-  const [commentSnapshot, postSnapshot] = await Promise.all([
-    getDocs(commentRef),
-    getDocs(postRef),
-  ]);
+  const posts = db.prepare("SELECT COUNT(*) as count FROM tasks").get() as {
+    count: number;
+  };
+  const comments = db
+    .prepare("SELECT COUNT(*) as count FROM comments")
+    .get() as { count: number };
 
   return {
     props: {
-      posts: postSnapshot.size || 0,
-      comments: commentSnapshot.size || 0,
+      posts: posts.count || 0,
+      comments: comments.count || 0,
     },
     revalidate: 60,
   };

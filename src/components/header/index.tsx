@@ -1,6 +1,6 @@
 import styles from "./styles.module.css";
 import Link from "next/link";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 
 export function Header() {
   const { data: session, status } = useSession();
@@ -26,9 +26,9 @@ export function Header() {
               {session.user?.name}
             </button>
           ) : (
-            <button className={styles.loginButton} onClick={() => signIn("google")}>
+            <Link href="/auth/login" className={styles.loginButton}>
               Entrar
-            </button>
+            </Link>
           )
         )}
       </section>

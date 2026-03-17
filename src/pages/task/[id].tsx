@@ -2,19 +2,9 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { useSession } from "next-auth/react";
 import { GetServerSideProps } from "next";
 import Head from "next/head";
-import { db } from "@/services/firebaseConnection";
-import {
-  doc,
-  collection,
-  query,
-  where,
-  getDoc,
-  addDoc,
-  getDocs,
-  deleteDoc,
-} from "firebase/firestore";
 import { Textarea } from "@/components/textarea";
 import { FaTrash } from "react-icons/fa";
+import getDb from "@/lib/db";
 import styles from "./styles.module.css";
 
 interface TaskDetailProps {
@@ -48,25 +38,29 @@ export default function Task({ item, allComments }: TaskDetailProps) {
     if (!session?.user?.email || !session?.user?.name) return;
 
     try {
-      const docRef = await addDoc(collection(db, "comments"), {
-        comment: input.trim(),
-        created: new Date(),
-        user: session.user.email,
-        name: session.user.name,
-        taskId: item.taskId,
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          comment: input.trim(),
+          taskId: item.taskId,
+        }),
       });
 
-      setComments((prev) => [
-        ...prev,
-        {
-          id: docRef.id,
-          comment: input.trim(),
-          user: session.user!.email!,
-          name: session.user!.name!,
-          taskId: item.taskId,
-        },
-      ]);
-      setInput("");
+      if (res.ok) {
+        const data = await res.json();
+        setComments((prev) => [
+          ...prev,
+          {
+            id: data.id,
+            comment: data.comment,
+            user: data.user,
+            name: data.name,
+            taskId: data.taskId,
+          },
+        ]);
+        setInput("");
+      }
     } catch (err) {
       console.error("Erro ao adicionar comentario:", err);
     }
@@ -74,8 +68,10 @@ export default function Task({ item, allComments }: TaskDetailProps) {
 
   async function handleDeleteComment(id: string) {
     try {
-      await deleteDoc(doc(db, "comments", id));
-      setComments((prev) => prev.filter((c) => c.id !== id));
+      const res = await fetch(`/api/comments/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setComments((prev) => prev.filter((c) => c.id !== id));
+      }
     } catch (err) {
       console.error("Erro ao deletar comentario:", err);
     }
@@ -144,14 +140,13 @@ export default function Task({ item, allComments }: TaskDetailProps) {
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const id = params?.id as string;
-  const docRef = doc(db, "tarefas", id);
+  const db = getDb();
 
-  const [snapshot, snapshotComments] = await Promise.all([
-    getDoc(docRef),
-    getDocs(query(collection(db, "comments"), where("taskId", "==", id))),
-  ]);
+  const task = db.prepare("SELECT * FROM tasks WHERE id = ?").get(id) as
+    | { tarefa: string; created: string; public: number; user_email: string }
+    | undefined;
 
-  if (!snapshot.exists() || !snapshot.data()?.public) {
+  if (!task || !task.public) {
     return {
       redirect: {
         destination: "/",
@@ -160,24 +155,31 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     };
   }
 
-  const data = snapshot.data();
-  const miliseconds = data?.created?.seconds * 1000;
+  const rawComments = db
+    .prepare("SELECT * FROM comments WHERE task_id = ? ORDER BY created DESC")
+    .all(id) as {
+    id: string;
+    comment: string;
+    user_email: string;
+    user_name: string;
+    task_id: string;
+  }[];
 
-  const allComments: Comment[] = snapshotComments.docs.map((doc) => ({
-    id: doc.id,
-    comment: doc.data().comment,
-    user: doc.data().user,
-    name: doc.data().name,
-    taskId: doc.data().taskId,
+  const allComments: Comment[] = rawComments.map((c) => ({
+    id: c.id,
+    comment: c.comment,
+    user: c.user_email,
+    name: c.user_name,
+    taskId: c.task_id,
   }));
 
   return {
     props: {
       item: {
-        tarefa: data?.tarefa,
-        public: data?.public,
-        created: new Date(miliseconds).toLocaleDateString(),
-        user: data?.user,
+        tarefa: task.tarefa,
+        public: !!task.public,
+        created: new Date(task.created).toLocaleDateString(),
+        user: task.user_email,
         taskId: id,
       },
       allComments,
