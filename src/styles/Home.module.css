@@ -61,6 +61,22 @@
   transform: translateY(-2px);
 }
 
+.publicLink {
+  margin-top: 32px;
+  padding: 12px 32px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-primary);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color var(--transition);
+  text-decoration: none;
+}
+
+.publicLink:hover {
+  background-color: var(--color-primary-hover);
+}
+
 @media screen and (max-width: 580px) {
   .hero {
     max-width: 80%;

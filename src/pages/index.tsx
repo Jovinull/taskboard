@@ -1,6 +1,7 @@
 import { GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "../styles/Home.module.css";
 import heroImg from "../../public/assets/hero.png";
 import getDb from "../lib/db";
@@ -40,6 +41,10 @@ export default function Home({ posts, comments }: HomeProps) {
             <span>+{comments} comentarios</span>
           </section>
         </div>
+
+        <Link href="/tasks" className={styles.publicLink}>
+          Ver tarefas publicas
+        </Link>
       </main>
     </div>
   );
